@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: cropsense-ai
+    runtime: python
+    plan: free
+    buildCommand: python -m pip install -r backend/requirements.txt
+    startCommand: cd backend && python main.py
+    healthCheckPath: /health
+    envVars:
+      - key: BACKEND_HOST
+        value: 0.0.0.0
+      - key: BACKEND_RELOAD
+        value: "false"
