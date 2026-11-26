@@ -316,7 +316,7 @@ function setupAnalysisAction() {
         return;
       }
 
-      const response = await fetch('http://127.0.0.1:8000/predict', {
+      const response = await fetch('/predict', {
         method: 'POST',
         body: formData
       });
@@ -337,7 +337,7 @@ function setupAnalysisAction() {
 
       initializeIcons();
     } catch (err) {
-      alert('Prediction Error: ' + err.message + '\n\nPlease ensure the CropSense AI FastAPI backend is running at http://127.0.0.1:8000.');
+      alert('Prediction Error: ' + err.message + '\n\nPlease ensure the CropSense AI app is running at ' + window.location.origin + '.');
     } finally {
       analyzeText.textContent = 'Analyze Image';
       analyzeBtn.disabled = false;
