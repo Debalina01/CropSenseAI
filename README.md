@@ -33,9 +33,11 @@ The current model uses image color statistics, color histograms, and a small neu
 
 ## Run locally
 
-### 1. Set up and start the backend
+You need Python installed and two PowerShell terminals. Run the backend first, then serve the frontend in the second terminal. In both terminals, start from the project root.
 
-From the project root, open PowerShell:
+### 1. Install dependencies and start the backend
+
+In the first terminal:
 
 ```powershell
 cd backend
@@ -46,18 +48,25 @@ pip install -r requirements.txt
 python -m uvicorn main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
-The API is available at `http://127.0.0.1:8000`. Interactive API documentation is at `http://127.0.0.1:8000/docs`.
+If PowerShell prevents the virtual environment from activating, allow scripts for this terminal session and activate it again:
 
-### 2. Serve the frontend
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\.venv\Scripts\Activate.ps1
+```
 
-In a second PowerShell terminal, from the project root:
+Keep this terminal open while using the app. The API is available at `http://127.0.0.1:8000`, and its interactive documentation is at `http://127.0.0.1:8000/docs`.
+
+### 2. Serve and open the frontend
+
+Open a second PowerShell terminal, then run:
 
 ```powershell
 cd frontend
 py -m http.server 3000
 ```
 
-Open `http://127.0.0.1:3000`. The frontend sends predictions to the backend at `http://127.0.0.1:8000`.
+Open `http://127.0.0.1:3000` in your browser. The frontend sends predictions to the backend at `http://127.0.0.1:8000`. Keep both terminals open while using the app; press `Ctrl+C` in each terminal to stop its server.
 
 ## API endpoints
 
