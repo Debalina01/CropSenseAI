@@ -1,5 +1,5 @@
 # CropSense AI — Crop Disease Detection
-
+<img width="1633" height="897" alt="project" src="https://github.com/user-attachments/assets/7fdb02c4-98db-4e4c-b136-16905204767d" />
 CropSense AI is a mobile-responsive web application for classifying crop-leaf images, branded with the project logo. The frontend lets users upload or select a sample image, sends it to a FastAPI backend, and displays the predicted crop, disease class, confidence, and related guidance.
 
 > **Important:** The model classifies disease categories; it does not measure disease severity. The severity percentage shown in the interface is a rough estimate derived from prediction confidence, not a measured infected leaf area. Results are informational and should not replace expert agricultural advice.
