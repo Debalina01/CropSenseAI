@@ -33,19 +33,20 @@ The current model uses image color statistics, color histograms, and a small neu
 
 ## Run locally
 
-You need Python installed and two PowerShell terminals. Run the backend first, then serve the frontend in the second terminal. In both terminals, start from the project root.
+You need Python installed. The backend serves the frontend as well, so you only need one terminal and one server.
 
-### 1. Install dependencies and start the backend
+### Install dependencies and run the app
 
-In the first terminal:
+From the project root, run these commands in PowerShell:
 
 ```powershell
 cd backend
+if (-not (Test-Path ..\.env)) { Copy-Item ..\.env.example ..\.env }
 py -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 pip install -r requirements.txt
-python -m uvicorn main:app --host 127.0.0.1 --port 8000 --reload
+python main.py
 ```
 
 If PowerShell prevents the virtual environment from activating, allow scripts for this terminal session and activate it again:
@@ -55,18 +56,15 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 .\.venv\Scripts\Activate.ps1
 ```
 
-Keep this terminal open while using the app. The API is available at `http://127.0.0.1:8000`, and its interactive documentation is at `http://127.0.0.1:8000/docs`.
+The app and API are available at `http://127.0.0.1:8000`; interactive API documentation is at `http://127.0.0.1:8000/docs`. Keep the terminal open while using the app. Press `Ctrl+C` to stop the server.
 
-### 2. Serve and open the frontend
+The root `.env` file sets `BACKEND_HOST`, `BACKEND_PORT`, and `BACKEND_RELOAD`. The local settings use `127.0.0.1`, port `8000`, and reload enabled; without a `.env` file, the backend defaults to `127.0.0.1:8000` with reload disabled. Restart the server after changing settings.
 
-Open a second PowerShell terminal, then run:
+## Deploy on Render
 
-```powershell
-cd frontend
-py -m http.server 3000
-```
+The included `render.yaml` configures a Render web service. Push the project to a GitHub repository, then in Render choose **New → Blueprint**, connect the repository, and deploy the detected `cropsense-ai` service. Render installs `backend/requirements.txt`, starts the app, and checks `/health`. Open the URL Render provides when deployment finishes.
 
-Open `http://127.0.0.1:3000` in your browser. The frontend sends predictions to the backend at `http://127.0.0.1:8000`. Keep both terminals open while using the app; press `Ctrl+C` in each terminal to stop its server.
+The deployed service binds to `0.0.0.0` and uses Render's `PORT` environment variable. The local `.env` is intentionally ignored by Git; configure deployment values through the hosting provider's environment settings instead.
 
 ## API endpoints
 

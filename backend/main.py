@@ -1,13 +1,30 @@
 import os
 import shutil
+from dotenv import load_dotenv
 from fastapi import FastAPI, File, UploadFile, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from preprocessing import validate_image_file, preprocess_image_bytes
 from prediction import predict_from_features, get_loaded_model
 
 BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_DIR = os.path.dirname(BACKEND_DIR)
+FRONTEND_DIR = os.path.join(PROJECT_DIR, "frontend")
+load_dotenv(os.path.join(PROJECT_DIR, ".env"))
+
+BACKEND_HOST = os.getenv("BACKEND_HOST", "127.0.0.1")
+try:
+    BACKEND_PORT = int(os.getenv("PORT", os.getenv("BACKEND_PORT", "8000")))
+except ValueError as error:
+    raise ValueError("BACKEND_PORT must be an integer between 1 and 65535") from error
+if not 1 <= BACKEND_PORT <= 65535:
+    raise ValueError("BACKEND_PORT must be an integer between 1 and 65535")
+BACKEND_RELOAD = os.getenv("BACKEND_RELOAD", "false").strip().lower() in {
+    "1", "true", "yes", "on"
+}
+
 UPLOADS_DIR = os.path.join(BACKEND_DIR, "uploads")
 os.makedirs(UPLOADS_DIR, exist_ok=True)
 
@@ -87,6 +104,13 @@ async def predict_crop_disease(file: UploadFile = File(...)):
             detail=f"Prediction failed: {str(e)}"
         )
 
+app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run(
+        "main:app",
+        host=BACKEND_HOST,
+        port=BACKEND_PORT,
+        reload=BACKEND_RELOAD,
+    )
