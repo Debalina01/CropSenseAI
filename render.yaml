@@ -3,7 +3,7 @@ services:
     name: cropsense-ai
     runtime: python
     plan: free
-    buildCommand: python -m pip install -r backend/requirements.txt
+    buildCommand: python -m pip install -r backend/requirements.txt && npm --prefix frontend ci && npm --prefix frontend run build
     startCommand: cd backend && python main.py
     healthCheckPath: /health
     envVars:

@@ -1,8 +1,8 @@
 # CropSense AI — Crop Disease Detection
 <img width="1633" height="897" alt="project" src="https://github.com/user-attachments/assets/7fdb02c4-98db-4e4c-b136-16905204767d" />
-CropSense AI is a mobile-responsive web application for classifying crop-leaf images, branded with the project logo. The frontend lets users upload or select a sample image, sends it to a FastAPI backend, and displays the predicted crop, disease class, confidence, and related guidance.
+CropSense AI is a mobile-responsive web application for classifying crop-leaf images. The frontend lets users upload or select a sample image, sends it to a FastAPI backend, and displays the predicted crop, disease class, confidence, and related guidance in a React diagnostic dashboard.
 
-> **Important:** The model classifies disease categories; it does not measure disease severity. The severity percentage shown in the interface is a rough estimate derived from prediction confidence, not a measured infected leaf area. Results are informational and should not replace expert agricultural advice.
+> **Important:** The current model classifies disease categories but does not measure disease severity or lesion area. Results are informational and should not replace expert agricultural advice.
 
 ## Project structure
 
@@ -12,6 +12,8 @@ Crop Disease Severity Detection/
 │   ├── assets/                 # Page imagery and sample leaf images
 │   ├── css/style.css
 │   ├── js/script.js
+│   ├── dashboard/src/          # React prediction dashboard (Tailwind CSS, Lucide React)
+│   ├── package.json
 │   └── index.html
 ├── backend/
 │   ├── main.py                 # FastAPI application
@@ -33,14 +35,17 @@ The current model uses image color statistics, color histograms, and a small neu
 
 ## Run locally
 
-You need Python installed. The backend serves the frontend as well, so you only need one terminal and one server.
+You need Python and Node.js installed. The backend serves the frontend as well, so you only need one terminal and one server.
 
 ### Install dependencies and run the app
 
 From the project root, run these commands in PowerShell:
 
 ```powershell
-cd backend
+cd frontend
+npm ci
+npm run build
+cd ..\backend
 if (-not (Test-Path ..\.env)) { Copy-Item ..\.env.example ..\.env }
 py -m venv .venv
 .\.venv\Scripts\Activate.ps1
@@ -62,7 +67,7 @@ The root `.env` file sets `BACKEND_HOST`, `BACKEND_PORT`, and `BACKEND_RELOAD`. 
 
 ## Deploy on Render
 
-The included `render.yaml` configures a Render web service. Push the project to a GitHub repository, then in Render choose **New → Blueprint**, connect the repository, and deploy the detected `cropsense-ai` service. Render installs `backend/requirements.txt`, starts the app, and checks `/health`. Open the URL Render provides when deployment finishes.
+The included `render.yaml` configures a Render web service. Push the project to a GitHub repository, then in Render choose **New → Blueprint**, connect the repository, and deploy the detected `cropsense-ai` service. Render installs the backend dependencies, builds the React dashboard, starts the app, and checks `/health`. Open the URL Render provides when deployment finishes.
 
 The deployed service binds to `0.0.0.0` and uses Render's `PORT` environment variable. The local `.env` is intentionally ignored by Git; configure deployment values through the hosting provider's environment settings instead.
 

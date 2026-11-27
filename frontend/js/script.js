@@ -1,17 +1,95 @@
 document.addEventListener('DOMContentLoaded', function () {
   initializeIcons();
+  setupTypingAnimation();
+  setupScrollAnimations();
   setupNavigation();
   setupFileUpload();
   setupPresetSamples();
   setupAnalysisAction();
   setupContactForm();
-  setupReportActions();
 });
 
 function initializeIcons() {
   if (typeof lucide !== 'undefined' && lucide.createIcons) {
     lucide.createIcons();
   }
+}
+
+function setupTypingAnimation() {
+  const prefersReducedMotion = window.matchMedia &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (prefersReducedMotion) return;
+
+  const typedParts = Array.from(document.querySelectorAll('[data-typing-text]'));
+  if (typedParts.length === 0) return;
+
+  const texts = typedParts.map(function (element) {
+    return element.dataset.typingText;
+  });
+  if (texts.some(function (text) { return !text; })) return;
+
+  typedParts.forEach(function (element) {
+    element.textContent = '';
+  });
+
+  let partIndex = 0;
+  function typeNextPart() {
+    const element = typedParts[partIndex];
+    const text = texts[partIndex];
+    let characterIndex = 0;
+    element.classList.add('typing');
+
+    function typeNextCharacter() {
+      characterIndex += 1;
+      element.textContent = text.slice(0, characterIndex);
+
+      if (characterIndex < text.length) {
+        window.setTimeout(typeNextCharacter, 55);
+      } else {
+        element.classList.remove('typing');
+        partIndex += 1;
+        if (partIndex < typedParts.length) {
+          window.setTimeout(typeNextPart, 180);
+        }
+      }
+    }
+
+    typeNextCharacter();
+  }
+
+  typeNextPart();
+}
+
+function setupScrollAnimations() {
+  const prefersReducedMotion = window.matchMedia &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (prefersReducedMotion || !('IntersectionObserver' in window)) return;
+
+  const sections = Array.from(document.querySelectorAll('main section, main section .section-header'));
+  const cards = Array.from(document.querySelectorAll('main section *')).filter(function (element) {
+    return Array.from(element.classList).some(function (className) {
+      return className.endsWith('-card');
+    });
+  });
+  const animatedElements = Array.from(new Set(sections.concat(cards)));
+  const observer = new IntersectionObserver(function (entries, currentObserver) {
+    entries.forEach(function (entry) {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add('is-visible');
+      currentObserver.unobserve(entry.target);
+    });
+  }, {
+    threshold: 0,
+    rootMargin: '0px 0px -24px 0px'
+  });
+
+  animatedElements.forEach(function (element) {
+    const siblings = element.parentElement ? Array.from(element.parentElement.children) : [];
+    const siblingIndex = siblings.indexOf(element);
+    element.style.setProperty('--reveal-delay', Math.min(siblingIndex * 80, 320) + 'ms');
+    element.classList.add('scroll-reveal');
+    observer.observe(element);
+  });
 }
 
 function setupNavigation() {
@@ -238,25 +316,16 @@ function setupPresetSamples() {
 
   const presetCatalog = {
     'preset-tomato': {
-      crop: 'Tomato',
-      botanical: 'Solanum lycopersicum',
-      disease: 'Early Blight',
       filename: 'sample-tomato-early-blight.jpg',
       filesize: '114 KB',
       imageSrc: 'assets/sample-tomato-blight.jpg'
     },
     'preset-potato': {
-      crop: 'Potato',
-      botanical: 'Solanum tuberosum',
-      disease: 'Late Blight',
       filename: 'sample-potato-late-blight.jpg',
       filesize: '89 KB',
       imageSrc: 'assets/sample-potato-blight.jpg'
     },
     'preset-corn': {
-      crop: 'Corn / Maize',
-      botanical: 'Zea mays',
-      disease: 'Healthy Foliage',
       filename: 'sample-corn-healthy-foliage.jpg',
       filesize: '211 KB',
       imageSrc: 'assets/sample-healthy-leaf.jpg'
@@ -289,13 +358,21 @@ function setupPresetSamples() {
 function setupAnalysisAction() {
   const analyzeBtn = document.getElementById('analyze-btn');
   const analyzeText = document.getElementById('analyze-text');
+  const analyzeSpinner = document.getElementById('analyze-spinner');
   const resultsSection = document.getElementById('results-section');
+  const previewImage = document.getElementById('preview-image');
 
   if (!analyzeBtn) return;
 
+  function setLoading(isLoading) {
+    analyzeBtn.disabled = isLoading;
+    analyzeBtn.setAttribute('aria-busy', String(isLoading));
+    analyzeText.textContent = isLoading ? 'Analyzing image...' : 'Analyze Image';
+    if (analyzeSpinner) analyzeSpinner.classList.toggle('hidden', !isLoading);
+  }
+
   analyzeBtn.addEventListener('click', async function () {
-    analyzeBtn.disabled = true;
-    analyzeText.textContent = 'Analyzing Leaf with CropSense AI Model...';
+    setLoading(true);
 
     const formData = new FormData();
 
@@ -304,6 +381,9 @@ function setupAnalysisAction() {
         formData.append('file', currentSelectedFile, currentSelectedFile.name);
       } else if (currentSampleData && currentSampleData.imageSrc) {
         const sampleResponse = await fetch(currentSampleData.imageSrc);
+        if (!sampleResponse.ok) {
+          throw new Error('Unable to load the selected sample image.');
+        }
         const sampleBlob = await sampleResponse.blob();
         const sampleFile = new File([sampleBlob], currentSampleData.filename, {
           type: sampleBlob.type || 'image/jpeg'
@@ -311,9 +391,16 @@ function setupAnalysisAction() {
         formData.append('file', sampleFile, currentSampleData.filename);
       } else {
         alert('Please select or upload an image first.');
-        analyzeBtn.disabled = false;
-        analyzeText.textContent = 'Analyze Image';
+        setLoading(false);
         return;
+      }
+
+      dispatchDashboardEvent('cropsense:prediction-start', {
+        imageUrl: previewImage ? previewImage.src : ''
+      });
+      if (resultsSection) {
+        resultsSection.classList.remove('hidden');
+        resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
 
       const response = await fetch('/predict', {
@@ -328,142 +415,33 @@ function setupAnalysisAction() {
       }
 
       const predictionData = await response.json();
+      if (!predictionData || predictionData.success !== true) {
+        throw new Error('The prediction API returned an invalid response.');
+      }
       displayAnalysisResults(predictionData);
-
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'An unexpected prediction error occurred.';
       if (resultsSection) {
         resultsSection.classList.remove('hidden');
-        resultsSection.scrollIntoView({ behavior: 'smooth' });
+        resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
-
-      initializeIcons();
-    } catch (err) {
-      alert('Prediction Error: ' + err.message + '\n\nPlease ensure the CropSense AI app is running at ' + window.location.origin + '.');
+      dispatchDashboardEvent('cropsense:prediction-error', { message: message });
     } finally {
-      analyzeText.textContent = 'Analyze Image';
-      analyzeBtn.disabled = false;
+      setLoading(false);
     }
   });
 }
 
-function displayAnalysisResults(data) {
-  const previewImage = document.getElementById('preview-image');
-  const resultsImage = document.getElementById('results-image');
-  const resultsStatusBadge = document.getElementById('results-status-badge');
-  const reportTimestamp = document.getElementById('report-timestamp');
-
-  const resultCropName = document.getElementById('result-crop-name');
-  const resultBotanicalName = document.getElementById('result-botanical-name');
-  const resultDiseaseName = document.getElementById('result-disease-name');
-  const resultPathogenType = document.getElementById('result-pathogen-type');
-  const resultHealthPill = document.getElementById('result-health-pill');
-  const resultStatusIcon = document.getElementById('result-status-icon');
-  const resultStatusText = document.getElementById('result-status-text');
-  const resultConfidence = document.getElementById('result-confidence');
-  const resultConfidenceBar = document.getElementById('result-confidence-bar');
-
-  const resultSeverityBadge = document.getElementById('result-severity-badge');
-  const resultSeverityFill = document.getElementById('result-severity-fill');
-  const resultAreaValue = document.getElementById('result-area-value');
-  const resultHealthyTissue = document.getElementById('result-healthy-tissue');
-  const resultUrgency = document.getElementById('result-urgency');
-
-  const resultDiseaseDescription = document.getElementById('result-disease-description');
-  const resultTreatmentText = document.getElementById('result-treatment-text');
-  const resultPreventionText = document.getElementById('result-prevention-text');
-  const demoTag = document.querySelector('.results-demo-tag');
-
-  if (demoTag) {
-    demoTag.textContent = 'Live Model Prediction';
-  }
-
-  if (resultsImage && previewImage) {
-    resultsImage.src = previewImage.src;
-  }
-
-  const now = new Date();
-  const timeString = now.toLocaleDateString() + ' at ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  if (reportTimestamp) {
-    reportTimestamp.textContent = 'Generated: ' + timeString;
-  }
-
-  const confidencePct = (data.confidence * 100).toFixed(1) + '%';
-
-  resultCropName.textContent = data.crop || 'Crop';
-  resultBotanicalName.textContent = data.botanical || 'Botanical classification';
-  resultDiseaseName.textContent = data.disease || 'Detected Condition';
-  resultPathogenType.textContent = data.raw_class || 'Pathology category';
-  resultConfidence.textContent = confidencePct;
-  resultConfidenceBar.style.width = confidencePct;
-
-  if (data.status === 'Healthy') {
-    resultAreaValue.textContent = '0.0%';
-    resultHealthyTissue.textContent = '100.0%';
-    resultUrgency.textContent = 'Normal Maintenance';
-    resultSeverityFill.style.width = '0%';
-    resultSeverityBadge.className = 'severity-level-badge severity-low';
-    resultSeverityBadge.textContent = 'Optimal Health (0.0%)';
-
-    resultsStatusBadge.textContent = 'Healthy';
-    resultsStatusBadge.style.backgroundColor = 'rgba(22, 163, 74, 0.92)';
-
-    resultHealthPill.className = 'status-indicator-badge status-healthy';
-    resultStatusText.textContent = 'Healthy Foliage';
-    resultStatusIcon.setAttribute('data-lucide', 'check-circle');
-
-    resultDiseaseName.className = 'metric-value text-success';
-    resultAreaValue.className = 'stat-stat-value text-success';
-  } else {
-    const estimatedArea = (Math.max(15, Math.min(65, Math.round(data.confidence * 45)))).toFixed(1) + '%';
-    const healthyPct = (100 - parseFloat(estimatedArea)).toFixed(1) + '%';
-
-    resultAreaValue.textContent = estimatedArea;
-    resultHealthyTissue.textContent = healthyPct;
-    resultUrgency.textContent = 'Action within 48h';
-    resultSeverityFill.style.width = estimatedArea;
-
-    if (parseFloat(estimatedArea) > 40) {
-      resultSeverityBadge.className = 'severity-level-badge severity-high';
-      resultSeverityBadge.textContent = 'High Severity (' + estimatedArea + ')';
-    } else {
-      resultSeverityBadge.className = 'severity-level-badge severity-moderate';
-      resultSeverityBadge.textContent = 'Moderate Severity (' + estimatedArea + ')';
-    }
-
-    resultsStatusBadge.textContent = 'Infected';
-    resultsStatusBadge.style.backgroundColor = 'rgba(220, 38, 38, 0.92)';
-
-    resultHealthPill.className = 'status-indicator-badge status-infected';
-    resultStatusText.textContent = 'Infected Foliage';
-    resultStatusIcon.setAttribute('data-lucide', 'alert-triangle');
-
-    resultDiseaseName.className = 'metric-value text-danger';
-    resultAreaValue.className = 'stat-stat-value text-danger';
-  }
-
-  resultDiseaseDescription.textContent = data.description || 'Disease description unavailable.';
-  resultTreatmentText.textContent = data.treatment || 'Treatment guidance unavailable.';
-  resultPreventionText.textContent = data.prevention || 'Prevention guidance unavailable.';
+function dispatchDashboardEvent(name, detail) {
+  window.dispatchEvent(new CustomEvent(name, { detail: detail || {} }));
 }
 
-function setupReportActions() {
-  const resetBtn = document.getElementById('reset-analysis-btn');
-  const printBtn = document.getElementById('print-report-btn');
-
-  if (resetBtn) {
-    resetBtn.addEventListener('click', function () {
-      clearImageSelection();
-      const detectSection = document.getElementById('detection');
-      if (detectSection) {
-        detectSection.scrollIntoView({ behavior: 'smooth' });
-      }
-    });
-  }
-
-  if (printBtn) {
-    printBtn.addEventListener('click', function () {
-      window.print();
-    });
-  }
+function displayAnalysisResults(data) {
+  const previewImage = document.getElementById('preview-image');
+  dispatchDashboardEvent('cropsense:prediction-success', {
+    prediction: data,
+    imageUrl: previewImage ? previewImage.src : ''
+  });
 }
 
 function setupContactForm() {

@@ -3,12 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CropSense AI - Crop Disease Severity Detection</title>
+  <title>CropSense AI - Crop Disease Detection</title>
   <link rel="icon" type="image/jpeg" href="assets/logo.jpeg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=2">
+  <link rel="stylesheet" href="css/style.css?v=5">
+  <link rel="stylesheet" href="dashboard-build/diagnostic-dashboard.css?v=3">
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
@@ -21,7 +22,7 @@
         </span>
         <div class="logo-text">
           <span class="logo-title">CropSense<span class="logo-accent">AI</span></span>
-          <span class="logo-tagline">Disease & Severity Diagnostic</span>
+          <span class="logo-tagline">Crop Disease Diagnostics</span>
         </div>
       </a>
 
@@ -53,9 +54,9 @@
             <i data-lucide="shield-check" class="badge-icon"></i>
             <span>Intelligent Agricultural Protection</span>
           </div>
-          <h1 class="hero-title">Detect Crop Diseases. <span class="text-highlight">Protect Your Harvest.</span></h1>
+          <h1 class="hero-title" aria-label="Detect Crop Diseases. Protect Your Harvest."><span data-typing-text="Detect Crop Diseases." aria-hidden="true">Detect Crop Diseases.</span> <span class="text-highlight" data-typing-text="Protect Your Harvest." aria-hidden="true">Protect Your Harvest.</span></h1>
           <p class="hero-description">
-            CropSense AI utilizes deep learning computer vision to diagnose crop foliage infections, calculate disease severity percentages, and empower farmers with rapid, actionable treatment recommendations.
+            CropSense AI uses computer vision to classify crop-leaf diseases and provide farmers with rapid, actionable treatment recommendations.
           </p>
           <div class="hero-buttons">
             <a href="#detection" class="btn btn-primary btn-lg">
@@ -111,9 +112,9 @@
             <div class="feature-icon-wrapper">
               <i data-lucide="pie-chart" class="feature-icon"></i>
             </div>
-            <h3 class="feature-title">Severity Calculation</h3>
+            <h3 class="feature-title">Prediction Confidence</h3>
             <p class="feature-text">
-              Move beyond basic classification. Calculate the exact percentage of infected leaf surface to monitor disease progression.
+              Review the model's confidence alongside each crop and disease classification to support informed follow-up.
             </p>
           </div>
 
@@ -187,20 +188,19 @@
             <div class="step-icon-wrapper">
               <i data-lucide="cpu" class="step-icon"></i>
             </div>
-            <h3 class="step-title">AI Visual Diagnosis</h3>
+            <h3 class="step-title">Model Classification</h3>
             <p class="step-text">
-              Deep convolutional neural networks analyze leaf lesions, discoloration, and patterns.
+              The NumPy-based model evaluates image features to classify the crop and likely disease.
             </p>
           </div>
-
           <div class="step-card">
             <div class="step-badge">03</div>
             <div class="step-icon-wrapper">
               <i data-lucide="gauge" class="step-icon"></i>
             </div>
-            <h3 class="step-title">Severity Assessment</h3>
+            <h3 class="step-title">Review Results</h3>
             <p class="step-text">
-              Automated image segmentation computes the precise percentage of damaged leaf area.
+              Review the prediction, confidence, health status, and practical guidance returned by the API.
             </p>
           </div>
 
@@ -366,22 +366,22 @@
           <span class="section-tag">AI Diagnostic Lab</span>
           <h2 class="section-title">Upload Leaf Image For Analysis</h2>
           <p class="section-subtitle">
-            Upload a clear photo of an infected or healthy crop leaf to analyze disease category, health status, and severity percentage.
+            Upload a clear photo of a crop leaf to analyze its disease category and health status.
           </p>
         </div>
 
         <div class="sample-preset-container">
           <span class="sample-preset-label">Or test with demo sample leaves:</span>
           <div class="sample-preset-buttons">
-            <button type="button" class="preset-btn" id="preset-tomato" data-crop="Tomato" data-disease="Early Blight" data-status="Infected" data-severity="Moderate" data-area="28.5%" data-confidence="97.2%" data-img="assets/sample-tomato-blight.jpg">
+            <button type="button" class="preset-btn" id="preset-tomato">
               <img src="assets/sample-tomato-blight.jpg" alt="Tomato Leaf Sample" class="preset-thumb">
               <span>Tomato Early Blight</span>
             </button>
-            <button type="button" class="preset-btn" id="preset-potato" data-crop="Potato" data-disease="Late Blight" data-status="Infected" data-severity="High" data-area="46.3%" data-confidence="95.8%" data-img="assets/sample-potato-blight.jpg">
+            <button type="button" class="preset-btn" id="preset-potato">
               <img src="assets/sample-potato-blight.jpg" alt="Potato Leaf Sample" class="preset-thumb">
               <span>Potato Late Blight</span>
             </button>
-            <button type="button" class="preset-btn" id="preset-corn" data-crop="Corn / Maize" data-disease="None (Healthy Foliage)" data-status="Healthy" data-severity="None" data-area="0.0%" data-confidence="99.1%" data-img="assets/sample-healthy-leaf.jpg">
+            <button type="button" class="preset-btn" id="preset-corn">
               <img src="assets/sample-healthy-leaf.jpg" alt="Healthy Leaf Sample" class="preset-thumb">
               <span>Healthy Corn Leaf</span>
             </button>
@@ -436,177 +436,24 @@
 
           <div class="analyze-action-bar">
             <button type="button" class="btn btn-primary btn-lg" id="analyze-btn" disabled>
-              <i data-lucide="sparkles" id="analyze-icon"></i>
-              <span id="analyze-text">Analyze Image</span>
+              <span class="hidden analyze-spinner" id="analyze-spinner" aria-hidden="true">
+                <i data-lucide="loader-circle"></i>
+              </span>
+              <span id="analyze-text" aria-live="polite">Analyze Image</span>
             </button>
           </div>
 
           <div class="demo-banner">
             <i data-lucide="info" class="banner-icon"></i>
             <div class="banner-content">
-              <strong>Frontend Simulation Mode:</strong>
-              <span>Interactive prototype demonstrating user experience, disease metrics, and severity grading. AI backend model integration is scheduled for Phase 2.</span>
+              <strong>Live prediction:</strong>
+              <span>Crop and disease classifications come from the prediction API. The current model does not measure lesion area.</span>
             </div>
           </div>
         </div>
 
         <div class="results-section hidden" id="results-section">
-          <div class="results-card">
-            <div class="results-header">
-              <div class="results-header-left">
-                <span class="results-pill">Diagnostic Report</span>
-                <span class="results-demo-tag">Demonstration Output</span>
-              </div>
-              <div class="results-header-right">
-                <span class="results-timestamp" id="report-timestamp">Generated just now</span>
-              </div>
-            </div>
-
-            <div class="results-body">
-              <div class="results-image-column">
-                <div class="results-image-wrapper">
-                  <img src="" alt="Diagnosed Leaf" class="results-image" id="results-image">
-                  <span class="results-overlay-badge" id="results-status-badge">Infected</span>
-                </div>
-                <div class="results-image-meta">
-                  <div class="meta-row">
-                    <span class="meta-label">Inference Time:</span>
-                    <span class="meta-val">1.24 seconds</span>
-                  </div>
-                  <div class="meta-row">
-                    <span class="meta-label">Input Resolution:</span>
-                    <span class="meta-val">512 x 512 px</span>
-                  </div>
-                  <div class="meta-row">
-                    <span class="meta-label">Model Pipeline:</span>
-                    <span class="meta-val">ResNet50 + U-Net</span>
-                  </div>
-                </div>
-              </div>
-
-              <div class="results-data-column">
-                <div class="metrics-grid">
-                  <div class="metric-card">
-                    <span class="metric-label">Identified Crop</span>
-                    <h3 class="metric-value" id="result-crop-name">Tomato</h3>
-                    <p class="metric-sub" id="result-botanical-name">Solanum lycopersicum</p>
-                  </div>
-
-                  <div class="metric-card">
-                    <span class="metric-label">Detected Pathology</span>
-                    <h3 class="metric-value text-danger" id="result-disease-name">Early Blight</h3>
-                    <p class="metric-sub" id="result-pathogen-type">Alternaria solani (Fungus)</p>
-                  </div>
-
-                  <div class="metric-card">
-                    <span class="metric-label">Health Status</span>
-                    <div class="status-indicator-badge status-infected" id="result-health-pill">
-                      <i data-lucide="alert-triangle" class="status-icon" id="result-status-icon"></i>
-                      <span id="result-status-text">Infected Leaf</span>
-                    </div>
-                  </div>
-
-                  <div class="metric-card">
-                    <span class="metric-label">Confidence Score</span>
-                    <h3 class="metric-value" id="result-confidence">97.2%</h3>
-                    <div class="confidence-bar-bg">
-                      <div class="confidence-bar-fill" id="result-confidence-bar"></div>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="severity-card">
-                  <div class="severity-header">
-                    <div>
-                      <h4 class="severity-title">Disease Severity Analysis</h4>
-                      <p class="severity-sub">Quantified leaf lesion area based on semantic segmentation</p>
-                    </div>
-                    <div class="severity-level-badge severity-moderate" id="result-severity-badge">
-                      Moderate Severity
-                    </div>
-                  </div>
-
-                  <div class="severity-meter-box">
-                    <div class="severity-track">
-                      <div class="severity-fill" id="result-severity-fill"></div>
-                    </div>
-                    <div class="severity-labels">
-                      <span>0% (Healthy)</span>
-                      <span>25% (Mild)</span>
-                      <span>50% (Moderate)</span>
-                      <span>75% (Severe)</span>
-                      <span>100% (Critical)</span>
-                    </div>
-                  </div>
-
-                  <div class="severity-stats-row">
-                    <div class="severity-stat">
-                      <span class="stat-stat-label">Estimated Affected Area</span>
-                      <span class="stat-stat-value text-danger" id="result-area-value">28.5%</span>
-                    </div>
-                    <div class="severity-stat">
-                      <span class="stat-stat-label">Healthy Tissue Retained</span>
-                      <span class="stat-stat-value text-success" id="result-healthy-tissue">71.5%</span>
-                    </div>
-                    <div class="severity-stat">
-                      <span class="stat-stat-label">Urgency Priority</span>
-                      <span class="stat-stat-value text-warning" id="result-urgency">Immediate Intervention</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-              <div class="disease-advisory">
-              <h4 class="advisory-heading">
-                <i data-lucide="book-open" class="advisory-icon"></i>
-                <span>Agronomic Advisory & Treatment Guidance</span>
-              </h4>
-
-              <div class="advisory-grid">
-                <div class="advisory-card">
-                  <h5 class="advisory-title">
-                    <i data-lucide="info" class="card-icon"></i>
-                    <span>Disease Overview</span>
-                  </h5>
-                  <p class="advisory-text" id="result-disease-description">
-                    Early Blight is caused by the fungal pathogen Alternaria solani. It manifests as concentric ring spots (target-board lesions) on older foliage, progressively causing chlorosis and premature leaf drop.
-                  </p>
-                </div>
-
-                <div class="advisory-card">
-                  <h5 class="advisory-title">
-                    <i data-lucide="flask-conical" class="card-icon"></i>
-                    <span>Recommended Treatment</span>
-                  </h5>
-                  <p class="advisory-text" id="result-treatment-text">
-                    Prune and safely burn heavily affected lower leaves. Apply copper-based organic fungicides or Mancozeb sprays at early dawn, ensuring thorough coverage on both upper and lower leaf surfaces.
-                  </p>
-                </div>
-
-                <div class="advisory-card">
-                  <h5 class="advisory-title">
-                    <i data-lucide="shield-check" class="card-icon"></i>
-                    <span>Preventive Field Management</span>
-                  </h5>
-                  <p class="advisory-text" id="result-prevention-text">
-                    Practice 3-year crop rotation avoiding solanaceous crops. Use drip irrigation rather than overhead sprinklers to prevent prolonged foliage wetness, and apply straw mulch to stop fungal spore splash.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div class="results-actions">
-              <button type="button" class="btn btn-secondary" id="reset-analysis-btn">
-                <i data-lucide="rotate-ccw"></i>
-                <span>Analyze Another Image</span>
-              </button>
-              <button type="button" class="btn btn-outline" id="print-report-btn">
-                <i data-lucide="printer"></i>
-                <span>Print Diagnostic Summary</span>
-              </button>
-            </div>
-          </div>
+          <div id="diagnostic-dashboard"></div>
         </div>
       </div>
     </section>
@@ -648,7 +495,7 @@
             </div>
             <h3 class="about-card-title">How Deep Learning Helps Agriculture?</h3>
             <p class="about-card-text">
-              Deep Convolutional Neural Networks (CNNs) analyze thousands of visual features, color gradients, and lesion contours with greater consistency than manual scouting. Combined with semantic segmentation models (such as U-Net), AI calculates quantitative severity percentages rather than relying solely on subjective human guesses.
+              CropSense AI uses a NumPy-based model to evaluate image color and 64 × 64 RGB/HSV-derived features. It classifies crop diseases but does not segment lesions or calculate affected leaf area.
             </p>
           </div>
 
@@ -673,9 +520,9 @@
               <span class="tech-pill"><i data-lucide="code-2"></i> Semantic HTML5</span>
               <span class="tech-pill"><i data-lucide="palette"></i> Modern Responsive CSS3</span>
               <span class="tech-pill"><i data-lucide="terminal"></i> Vanilla JavaScript</span>
-              <span class="tech-pill"><i data-lucide="layers"></i> Deep Learning CNNs</span>
-              <span class="tech-pill"><i data-lucide="maximize-2"></i> Foliage Semantic Segmentation</span>
-              <span class="tech-pill"><i data-lucide="server"></i> Planned FastAPI ML Microservice</span>
+              <span class="tech-pill"><i data-lucide="layers"></i> NumPy MLP Classifier</span>
+              <span class="tech-pill"><i data-lucide="scan"></i> Crop Disease Classification</span>
+              <span class="tech-pill"><i data-lucide="server"></i> FastAPI Prediction API</span>
             </div>
           </div>
           <div class="tech-overview-image">
@@ -813,11 +660,11 @@
             </span>
             <div class="logo-text">
               <span class="logo-title text-white">CropSense<span class="logo-accent">AI</span></span>
-              <span class="logo-tagline text-muted">Crop Disease Severity Detection</span>
+              <span class="logo-tagline text-muted">Crop Disease Detection</span>
             </div>
           </a>
           <p class="footer-brand-desc">
-            An open initiative harnessing modern computer vision to assist growers in early disease diagnosis and foliage severity estimation.
+            An open initiative harnessing computer vision to assist growers with early crop disease diagnosis.
           </p>
         </div>
 
@@ -844,14 +691,14 @@
         <div class="footer-links-col">
           <h4 class="footer-col-title">Important Notice</h4>
           <p class="footer-disclaimer">
-            CropSense AI Phase 1 is a demonstration frontend interface. Diagnostic outcomes shown during this phase are simulations. Always consult certified local agricultural extension officers before applying intensive chemical interventions.
+            Predictions are informational and do not replace a qualified agricultural specialist's diagnosis. Consult local experts before applying treatments.
           </p>
         </div>
       </div>
 
       <div class="footer-bottom">
         <p class="footer-copyright">
-          &copy; 2026 CropSense AI. Crop Disease Severity Detection Project. All rights reserved.
+          &copy; 2026 CropSense AI. Crop Disease Detection Project. All rights reserved.
         </p>
         <div class="footer-bottom-links">
           <a href="#home" class="footer-bottom-link">Back to Top</a>
@@ -860,6 +707,7 @@
     </div>
   </footer>
 
-  <script src="js/script.js?v=2"></script>
+  <script src="js/script.js?v=5"></script>
+  <script src="dashboard-build/diagnostic-dashboard.js?v=7"></script>
 </body>
 </html>

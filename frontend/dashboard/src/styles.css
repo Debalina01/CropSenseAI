@@ -1,0 +1,40 @@
+@import "tailwindcss/theme.css" theme(reference);
+@import "tailwindcss/utilities.css";
+@source "../";
+
+#diagnostic-dashboard {
+  color: #334155;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+}
+
+#diagnostic-dashboard *,
+#diagnostic-dashboard *::before,
+#diagnostic-dashboard *::after {
+  box-sizing: border-box;
+}
+
+#diagnostic-dashboard img {
+  display: block;
+  max-width: 100%;
+}
+
+#diagnostic-dashboard .dashboard-action-button {
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  color: #1e293b;
+}
+
+#diagnostic-dashboard .dashboard-action-button:hover {
+  background-color: #f8fafc;
+}
+
+#diagnostic-dashboard .dashboard-action-button:focus-visible {
+  outline: 3px solid #86efac;
+  outline-offset: 2px;
+}
+
+@media print {
+  #diagnostic-dashboard .dashboard-actions {
+    display: none;
+  }
+}

@@ -164,6 +164,62 @@ button {
   display: none !important;
 }
 
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-content > * {
+  animation: fade-up 650ms ease both;
+}
+
+.hero-content > :nth-child(2) {
+  animation-delay: 100ms;
+}
+
+.hero-content > :nth-child(3) {
+  animation-delay: 180ms;
+}
+
+.hero-content > :nth-child(4) {
+  animation-delay: 260ms;
+}
+
+.hero-content > :nth-child(5) {
+  animation-delay: 340ms;
+}
+
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 700ms ease var(--reveal-delay, 0ms),
+    transform 700ms ease var(--reveal-delay, 0ms);
+}
+
+.scroll-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-content > * {
+    animation: none;
+  }
+
+  .scroll-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
 .btn {
   display: inline-flex;
   align-items: center;
@@ -299,6 +355,10 @@ button {
   letter-spacing: -0.02em;
 }
 
+.logo-title.text-white {
+  color: #ffffff;
+}
+
 .logo-accent {
   color: var(--primary-600);
 }
@@ -426,6 +486,22 @@ button {
   letter-spacing: -0.03em;
   line-height: 1.15;
   margin-bottom: 20px;
+}
+
+.hero-title .typing::after {
+  content: '';
+  display: inline-block;
+  height: 0.85em;
+  margin-left: 3px;
+  border-right: 3px solid currentColor;
+  vertical-align: -0.08em;
+  animation: typing-caret-blink 700ms steps(1, end) infinite;
+}
+
+@keyframes typing-caret-blink {
+  50% {
+    opacity: 0;
+  }
 }
 
 .hero-description {
@@ -2050,5 +2126,22 @@ button {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+.analyze-spinner:not(.hidden) {
+  display: inline-flex;
+  align-items: center;
+}
+
+.analyze-spinner svg {
+  width: 18px;
+  height: 18px;
+  animation: analyze-spinner-rotate 0.9s linear infinite;
+}
+
+@keyframes analyze-spinner-rotate {
+  to {
+    transform: rotate(360deg);
   }
 }
