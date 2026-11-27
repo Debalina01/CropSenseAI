@@ -7,6 +7,7 @@ Important: The current model classifies disease categories but does not measure 
 🚀 Live Application
 
 Click here to use CropSense AI
+https://cropsense-ai-wyh2.onrender.com
 
 🛠️ Technology Stack
 
